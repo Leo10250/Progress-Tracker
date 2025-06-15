@@ -41,11 +41,11 @@ public class SetProgressController {
     }
 
     @GetMapping(value = "/get", produces = "application/json")
-    public ResponseEntity<ProgressResponse> getProgress(
+    public ResponseEntity<?> getProgress(
             @RequestParam("userId") Long userId,
             @RequestParam(value = "category", required = false) String category            
     ) {
-        log.info("[getProgress] id={}, category={}", id, category);
+        log.info("[getProgress] id={}, category={}", userId, category);
 
         Progress p = progressService.getProgressByUserId(userId);
         if (p == null) {
