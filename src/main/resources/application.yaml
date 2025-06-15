@@ -1,0 +1,8 @@
+spring:
+    application:
+        name: progress-tracker
+
+logging:
+    level:
+        com:
+            progressTracker: DEBUG
