@@ -6,7 +6,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.progressTracker.progress_tracker.dto_temp.requests_temp.ProgressRequest;
+import com.progressTracker.progress_tracker.dto.requests.ProgressRequest;
 import com.progressTracker.progress_tracker.model.Progress;
 import com.progressTracker.progress_tracker.repository.ProgressRepository;
 
