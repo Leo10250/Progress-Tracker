@@ -38,4 +38,12 @@ public class ProgressService {
 
         return progress;
     }
+
+    @Transactional(readOnly = true)
+    public Progress getProgressByUserId(Long userId) {
+        return repository.findByUserId(userId)
+                .orElseThrow(() -> 
+                    new IllegalArgumentException("No progress found for userId: " + userId)
+                );
+    }
 }
