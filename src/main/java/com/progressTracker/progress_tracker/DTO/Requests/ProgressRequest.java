@@ -1,10 +1,10 @@
-package com.progressTracker.progress_tracker.DTO.Requests;
+package com.progressTracker.progress_tracker.dto.Requests;
 
 import java.util.Map;
 import lombok.Data;
 
 @Data
 public class ProgressRequest {
-    private int userID;
+    private Long userID;
     private Map<String, Integer> categories;
 }
