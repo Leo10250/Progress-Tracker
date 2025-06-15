@@ -1,10 +1,7 @@
-package com.progressTracker.progress_tracker.service.VO;
-
-import org.springframework.stereotype.Component;
+package com.progressTracker.progress_tracker.DTO.Responses;
 
 import lombok.Data;
 
-@Component
 @Data
 public class ProgressResponse {
     private String status;

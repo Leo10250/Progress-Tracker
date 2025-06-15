@@ -1,10 +1,7 @@
-package com.progressTracker.progress_tracker.service.VO;
+package com.progressTracker.progress_tracker.DTO.Responses;
 
-import org.springframework.stereotype.Component;
 import lombok.Data;
 
-
-@Component
 @Data
 public class HealthCheckResponse {
     private String status;
