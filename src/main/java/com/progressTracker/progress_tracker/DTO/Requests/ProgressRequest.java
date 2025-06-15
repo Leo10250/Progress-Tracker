@@ -1,4 +1,4 @@
-package com.progressTracker.progress_tracker.DTO.Requests;
+package com.progressTracker.progress_tracker.dto.Requests;
 
 import java.util.Map;
 import lombok.Data;

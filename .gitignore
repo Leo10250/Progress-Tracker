@@ -199,3 +199,7 @@ README.html
 *.iml
 .idea
 .exercism
+
+# H2 database files
+data/
+*.mv.db

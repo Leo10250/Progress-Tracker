@@ -1,4 +1,4 @@
-package com.progressTracker.progress_tracker.DTO.Responses;
+package com.progressTracker.progress_tracker.dto.Responses;
 
 import lombok.Data;
 

@@ -2,7 +2,7 @@ package com.progressTracker.progress_tracker.controllers;
 
 import org.springframework.web.bind.annotation.RestController;
 
-import com.progressTracker.progress_tracker.DTO.Responses.HealthCheckResponse;
+import com.progressTracker.progress_tracker.dto.Responses.HealthCheckResponse;
 
 import lombok.extern.slf4j.Slf4j;
 
