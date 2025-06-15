@@ -5,6 +5,6 @@ import lombok.Data;
 
 @Data
 public class ProgressRequest {
-    private int userID;
+    private Long userID;
     private Map<String, Integer> categories;
 }
