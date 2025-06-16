@@ -37,10 +37,10 @@ jobs:
             - name: Code coverage summary
               if: success() # only if tests passed
               run: |
-                  mkdir -p target/site/jacoco   # convert location if you use Maven
-                  ./gradlew jacocoTestReport
-                  echo "### Code coverage" >> $GITHUB_STEP_SUMMARY
-                  grep -A1 '<counter type="INSTRUCTION"' build/reports/jacoco/test/jacocoTestReport.xml \
-                  | tail -1 \
-                  | awk -F'"' '{printf("%s%%\n", $6*100/($6+$8))}' \
-                  >> $GITHUB_STEP_SUMMARY
+                ./gradlew jacocoTestReport
+                echo "### Code coverage" >> $GITHUB_STEP_SUMMARY
+                awk -F'"' 'NR==2 {
+                    total=$6+$8
+                    cov = (total==0 ? 0 : $6*100/total)
+                    printf("%.2f%%\n", cov)
+                }' build/reports/jacoco/test/jacocoTestReport.xml >> $GITHUB_STEP_SUMMARY
