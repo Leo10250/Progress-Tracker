@@ -4,18 +4,58 @@
     "configuration_1_3.dtd">
 
 <module name="Checker">
-  <!-- global default -->
+  <!-- default severity for all rules -->
   <property name="severity" value="warning"/>
 
-  <!-- file-level check (allowed only under Checker) -->
+  <!-- tab characters anywhere in the file -->
   <module name="FileTabCharacter">
     <property name="eachLine" value="true"/>
   </module>
 
-  <!-- AST checks belong inside TreeWalker -->
+  <!-- AST-based rules (run only on Java syntax) -->
   <module name="TreeWalker">
+
+    <!-- forbid wildcard “*” imports -->
+    <module name="AvoidStarImport"/>
+
+    <!-- require braces around every if/for/while block -->
+    <module name="NeedBraces"/>
+
+    <!-- { placement rules: “same line” for most constructs -->
+    <module name="LeftCurly"/>
+
+    <!-- } placement rules (matching the opening brace style) -->
+    <module name="RightCurly"/>
+
+    <!-- space *after* commas, semicolons, keywords like “return” -->
+    <module name="WhitespaceAfter"/>
+
+    <!-- spaces *around* operators and keywords -->
+    <module name="WhitespaceAround"/>
+
+    <!-- no stray space right *before* “,” “;” “++” etc. -->
+    <module name="NoWhitespaceBefore"/>
+
+    <!-- package name = all lowercase with dots -->
+    <module name="PackageName"/>
+
+    <!-- class / interface names = PascalCase -->
     <module name="TypeName"/>
+
+    <!-- method names = camelCase -->
     <module name="MethodName"/>
-    <module name="JavadocMethod"/>
-  </module>
-</module>
+
+    <!-- field (member) names = camelCase -->
+    <module name="MemberName"/>
+
+    <!-- parameter names = camelCase -->
+    <module name="ParameterName"/>
+
+    <!-- local variable names = camelCase -->
+    <module name="LocalVariableName"/>
+
+    <!-- 1 public/top-level class per .java file -->
+    <module name="OneTopLevelClass"/>
+
+  </module> <!-- /TreeWalker -->
+</module>   <!-- /Checker -->
