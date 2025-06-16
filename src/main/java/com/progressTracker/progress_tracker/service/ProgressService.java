@@ -26,13 +26,13 @@ public class ProgressService {
 
     @Transactional
     public Progress saveProgress(ProgressRequest request) {
-        Progress progress = new Progress();
-        progress.setUserId(request.getUserID());
-
         Map<String, Integer> categories = request.getCategories();
-        progress.setStudy(categories.getOrDefault("study", 0));
-        progress.setTv(categories.getOrDefault("tv", 0));
-        progress.setWork(categories.getOrDefault("work", 0));
+        Progress progress = Progress.builder()
+                .userId(request.getUserID())
+                .study(categories.getOrDefault("study", 0))
+                .tv(categories.getOrDefault("tv", 0))
+                .work(categories.getOrDefault("work", 0))
+                .build();
 
         repository.save(progress);
 
@@ -42,8 +42,6 @@ public class ProgressService {
     @Transactional(readOnly = true)
     public Progress getProgressByUserId(Long userId) {
         return repository.findByUserId(userId)
-                .orElseThrow(() -> 
-                    new IllegalArgumentException("No progress found for userId: " + userId)
-                );
+                .orElseThrow(() -> new IllegalArgumentException("No progress found for userId: " + userId));
     }
 }
