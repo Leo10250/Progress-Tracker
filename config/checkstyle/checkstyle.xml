@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "configuration_1_3.dtd">
+
+<module name="Checker">
+  <!-- global default -->
+  <property name="severity" value="warning"/>
+
+  <!-- file-level check (allowed only under Checker) -->
+  <module name="FileTabCharacter">
+    <property name="eachLine" value="true"/>
+  </module>
+
+  <!-- AST checks belong inside TreeWalker -->
+  <module name="TreeWalker">
+    <module name="TypeName"/>
+    <module name="MethodName"/>
+    <module name="JavadocMethod"/>
+  </module>
+</module>
