@@ -2,59 +2,70 @@
 name: PR Check
 
 on:
-    pull_request:
-        branches: [main] # or whatever branch is protected
+  pull_request:
+    branches: [ main ]     # adapt if you use a different default branch
 
 jobs:
-    build:
-        runs-on: ubuntu-latest
+  build:
+    runs-on: ubuntu-latest
 
-        steps:
-            # Fetch code
-            - uses: actions/checkout@v4
+    steps:
+      # 1) Fetch code ──────────────────────────────────────────────────────────
+      - uses: actions/checkout@v4
 
-            # Set up JDK 21 (Temurin)
-            - name: Set up JDK 21
-              uses: actions/setup-java@v4
-              with:
-                  java-version: "21"
-                  distribution: "temurin"
-                  cache: gradle # speeds up subsequent runs
+      # 2) JDK 21 + Gradle cache (Temurin) ─────────────────────────────────────
+      - uses: actions/setup-java@v4
+        with:
+          java-version: "21"
+          distribution: "temurin"
+          cache: gradle              # <-- re-uses ~/.gradle caches between runs
 
-            # Style-check ONLY (fails fast if lint errors)
-            - name: Run Checkstyle
-              run: |
-                  ./gradlew checkstyleMain checkstyleTest --no-daemon
-              # always show the HTML reports even on failure
-              continue-on-error: true
+      # 3) Lint first – but *capture* the exit code so the job can still finish
+      - name: Run Checkstyle
+        id: checkstyle                  # we’ll look at this id later
+        shell: bash
+        run: |
+          set +e                       # (1) don’t abort the shell immediately
+          ./gradlew --no-daemon \
+              checkstyleMain checkstyleTest
+          echo "checkstyle_exit=$?" >> "$GITHUB_OUTPUT"
 
-            # Build, unit-test, Jacoco
-            - name: Build & test
-              run: ./gradlew clean build --no-daemon
+      # 4) Build, unit-test, Jacoco  ───────────────────────────────────────────
+      - name: Build & test
+        run: ./gradlew clean build --no-daemon
 
-            # Upload test reports
-            - name: Upload unit-test reports
-              if: always() # run even if tests failed
-              uses: actions/upload-artifact@v4
-              with:
-                  name: test-results
-                  path: build/reports/tests/
+      # 5) Always upload unit-test xml/html ⇢ PR Artifacts
+      - name: Upload unit-test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: build/reports/tests/
 
-            # Upload Checkstyle HTML reports
-            - name: Upload Checkstyle reports
-              if: always()
-              uses: actions/upload-artifact@v4
-              with:
-                  name: checkstyle-reports
-                  path: |
-                      build/reports/checkstyle/main.html
-                      build/reports/checkstyle/test.html
+      # 6) Always upload Checkstyle reports (html + xml)
+      - name: Upload Checkstyle reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checkstyle-reports
+          path: |
+            build/reports/checkstyle/*.html
+            build/reports/checkstyle/*.xml
 
-            # code-coverage summary in the PR conversation
-            - name: Code coverage summary
-              if: success() # only if build + tests passed
-              run: |
-                  ./gradlew jacocoTestReport --no-daemon
-                  echo "### Code coverage" >> $GITHUB_STEP_SUMMARY
-                  awk -F'"' 'NR==2 { total=$6+$8; cov=(total==0?0:$6*100/total); printf("%.2f%%\n", cov) }' \
-                      build/reports/jacoco/test/jacocoTestReport.xml >> $GITHUB_STEP_SUMMARY
+      # 7) Post a Jacoco % summary in the PR conversation
+      - name: Code-coverage summary
+        if: success()         # only after successful build+tests
+        shell: bash
+        run: |
+          ./gradlew jacocoTestReport --no-daemon
+          echo "### Code coverage" >> "$GITHUB_STEP_SUMMARY"
+          awk -F'"' 'NR==2 { lines=$6+$8; covered=$6; \
+            printf("%.2f%%\n", lines==0?0:covered*100/lines) }' \
+            build/reports/jacoco/test/jacocoTestReport.xml >> "$GITHUB_STEP_SUMMARY"
+
+      # 8) Finally, **fail the job** if Checkstyle produced any violations
+      - name: Fail if Checkstyle failed
+        if: steps.checkstyle.outputs.checkstyle_exit != '0'
+        run: |
+          echo "Checkstyle violations detected – see the uploaded HTML report." >&2
+          exit 1

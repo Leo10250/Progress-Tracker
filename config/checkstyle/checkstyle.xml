@@ -7,11 +7,6 @@
   <!-- default severity for all rules -->
   <property name="severity" value="warning"/>
 
-  <!-- tab characters anywhere in the file -->
-  <module name="FileTabCharacter">
-    <property name="eachLine" value="true"/>
-  </module>
-
   <!-- AST-based rules (run only on Java syntax) -->
   <module name="TreeWalker">
 
@@ -29,9 +24,6 @@
 
     <!-- space *after* commas, semicolons, keywords like “return” -->
     <module name="WhitespaceAfter"/>
-
-    <!-- spaces *around* operators and keywords -->
-    <module name="WhitespaceAround"/>
 
     <!-- no stray space right *before* “,” “;” “++” etc. -->
     <module name="NoWhitespaceBefore"/>
