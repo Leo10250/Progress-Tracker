@@ -25,13 +25,13 @@ import java.util.Map;
 @RestController
 @RequestMapping("/progress")
 @RequiredArgsConstructor
-public class SetProgressController {
+public class ProgressController {
 
     private final ProgressService progressService;
 
     @PostMapping(value = "/set", consumes = { "application/json" }, produces = { "application/json" })
-    public ProgressResponse setProgress(@RequestBody ProgressRequest progressRequest) {
-        log.info("[setProgress] requestL {}", progressRequest.toString());
+    public ResponseEntity<ProgressResponse> setProgress(@RequestBody ProgressRequest progressRequest) {
+        log.info("[setProgress] request {}", progressRequest.toString());
 
         progressService.saveProgress(progressRequest);
 
@@ -39,7 +39,7 @@ public class SetProgressController {
                 "Success",
                 "200",
                 "Progress saved successfully");
-        return response;
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping(value = "/get", produces = "application/json")
