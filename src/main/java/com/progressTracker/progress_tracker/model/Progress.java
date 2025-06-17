@@ -24,7 +24,8 @@ public class Progress {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
     private Long userId;
-    private Integer work;
-    private Integer study;
-    private Integer tv;
+    private Integer workHours;
+    private Integer studyHours;
+    private Integer tvHours;
+    private Integer cookingHours;
 }

@@ -6,6 +6,7 @@ import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.progressTracker.progress_tracker.constants.Constants;
 import com.progressTracker.progress_tracker.dto.requests.ProgressRequest;
 import com.progressTracker.progress_tracker.model.Progress;
 import com.progressTracker.progress_tracker.repository.ProgressRepository;
@@ -29,9 +30,10 @@ public class ProgressService {
         Map<String, Integer> categories = request.getCategories();
         Progress progress = Progress.builder()
                 .userId(request.getUserID())
-                .study(categories.getOrDefault("study", 0))
-                .tv(categories.getOrDefault("tv", 0))
-                .work(categories.getOrDefault("work", 0))
+                .studyHours(categories.getOrDefault(Constants.STUDY_HOURS, 0))
+                .tvHours(categories.getOrDefault(Constants.TV_HOURS, 0))
+                .workHours(categories.getOrDefault(Constants.WORK_HOURS, 0))
+                .cookingHours(categories.getOrDefault(Constants.COOKING_HOURS, null))
                 .build();
 
         repository.save(progress);
