@@ -9,7 +9,8 @@ import com.progressTracker.progress_tracker.dto.requests.ProgressRequest;
 import com.progressTracker.progress_tracker.dto.responses.ProgressResponse;
 
 import com.progressTracker.progress_tracker.service.ProgressService;
-import com.progressTracker.progress_tracker.model.Progress;   
+import com.progressTracker.progress_tracker.model.Progress;
+import com.progressTracker.progress_tracker.constants.Constants;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -44,8 +45,8 @@ public class ProgressController {
 
     @GetMapping(value = "/get", produces = "application/json")
     public ResponseEntity<?> getProgress(
-            @RequestParam("userId") Long userId,
-            @RequestParam(value = "category", required = false) String category            
+            @RequestParam(Constants.USER_ID) Long userId,
+            @RequestParam(value = Constants.CATEGORIES, required = false) String category            
     ) {
         log.info("[getProgress] id={}, category={}", userId, category);
 
@@ -58,20 +59,22 @@ public class ProgressController {
 
         if (category == null) {
             Map<String, Integer> all = new HashMap<>();
-            all.put("study", p.getStudy());
-            all.put("work",  p.getWork());
-            all.put("tv",    p.getTv());
+            all.put(Constants.STUDY_HOURS, p.getStudyHours());
+            all.put(Constants.WORK_HOURS,  p.getWorkHours());
+            all.put(Constants.TV_HOURS,    p.getTvHours());
+            all.put(Constants.COOKING_HOURS,    p.getTvHours());
 
             Map<String, Object> body = new HashMap<>();
-            body.put("categories", all);
+            body.put(Constants.CATEGORIES, all);
             return ResponseEntity.ok(body);
         }
 
         Integer val;
         switch (category) {
-            case "study": val = p.getStudy(); break;
-            case "work":  val = p.getWork();  break;
-            case "tv":    val = p.getTv();    break;
+            case Constants.STUDY_HOURS: val = p.getStudyHours(); break;
+            case Constants.WORK_HOURS:  val = p.getWorkHours();  break;
+            case Constants.TV_HOURS:    val = p.getTvHours();    break;
+            case Constants.COOKING_HOURS:    val = p.getTvHours();    break;
             default:
                 return ResponseEntity
                         .badRequest()
