@@ -1,6 +1,5 @@
 package com.progressTracker.progress_tracker.service;
 
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.stereotype.Service;
@@ -33,7 +32,7 @@ public class ProgressService {
                 .studyHours(categories.getOrDefault(Constants.STUDY_HOURS, 0))
                 .tvHours(categories.getOrDefault(Constants.TV_HOURS, 0))
                 .workHours(categories.getOrDefault(Constants.WORK_HOURS, 0))
-                .cookingHours(categories.getOrDefault(Constants.COOKING_HOURS, null))
+                .cookingHours(categories.getOrDefault(Constants.COOKING_HOURS, 0))
                 .build();
 
         repository.save(progress);
