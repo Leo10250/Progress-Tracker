@@ -13,7 +13,7 @@ on:
     branches: [main] # run for every PR targeting main
 
 jobs:
-  # 1) LINT -------------------------------------------------------------------
+  # 1) LINT
   lint:
     name: 📝 Checkstyle
     runs-on: ubuntu-latest
@@ -45,7 +45,7 @@ jobs:
           name: checkstyle-reports
           path: build/reports/checkstyle/*
 
-  # 2) BUILD & UNIT TESTS ------------------------------------------------------
+  # 2) BUILD & UNIT TESTS
   build-test:
     name: 🛠️ Build & Unit Tests
     runs-on: ubuntu-latest
@@ -70,7 +70,7 @@ jobs:
           name: test-results
           path: build/reports/tests/
 
-  # 3) COVERAGE & GATE ---------------------------------------------------------
+  # 3) COVERAGE & GATE
   coverage:
     name: 📊 Code Coverage
     runs-on: ubuntu-latest
@@ -85,11 +85,11 @@ jobs:
           distribution: temurin
           cache: gradle
 
-      # ----- generate Jacoco report ------------------------------------------
+      # generate Jacoco report
       - name: Generate coverage report
         run: ./gradlew jacocoTestReport --no-daemon
 
-      # ----- extract overall LINE coverage % ---------------------------------
+      # extract overall LINE coverage %
       - name: Extract coverage %
         id: extract
         shell: bash
@@ -103,7 +103,7 @@ jobs:
           echo "pct=$pct" >> "$GITHUB_OUTPUT"
           echo "### Code coverage: ${pct}% " >> "$GITHUB_STEP_SUMMARY"
 
-      # ----- locate any existing bot coverage comment -------------------------
+      # locate any existing bot coverage comment
       - name: Find existing coverage comment
         id: find_cov
         uses: peter-evans/find-comment@v3
@@ -112,7 +112,7 @@ jobs:
           comment-author: "github-actions[bot]"
           body-includes: "<!-- code-coverage-comment -->"
 
-      # ----- delete the old comment if it exists ------------------------------
+      # delete the old comment if it exists
       - name: Delete old coverage comment
         if: steps.find_cov.outputs.comment-id != ''
         uses: actions/github-script@v7
@@ -126,7 +126,7 @@ jobs:
         env:
           COVERAGE_COMMENT_ID: ${{ steps.find_cov.outputs.comment-id }}
 
-      # ----- post a fresh coverage comment ------------------------------------
+      # post a fresh coverage comment
       - name: 💬 Post new coverage comment
         uses: peter-evans/create-or-update-comment@v4
         with:
@@ -139,7 +139,7 @@ jobs:
 
             ${{ fromJson(steps.extract.outputs.pct) < 80 && '⚠️ Below required 80 %' || '✅ Meets required 80 %+' }}
 
-      # ----- enforce the 80 % gate (main & PRs into main) ----------------------
+      # enforce the 80 % gate (main & PRs into main)
       - name: Enforce 80 % threshold
         shell: bash
         run: |
