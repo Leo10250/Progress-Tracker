@@ -57,40 +57,46 @@ jobs:
             build/reports/checkstyle/*.html
             build/reports/checkstyle/*.xml
 
-            # 7) Generate coverage and capture it
+      # 7) Generate coverage and capture it
       - name: Generate coverage and capture it
         id: coverage
         shell: bash
         run: |
-          # 1) produce the XML
           ./gradlew jacocoTestReport --no-daemon
 
-          # 2) grab just the <counter type="LINE" …/> line
-          LINE_TAG=$(grep 'counter.*type="LINE"' build/reports/jacoco/test/jacocoTestReport.xml)
+          # ── pull the first  <counter type="LINE" …/>  element
+          LINE_TAG=$(grep -m1 '<counter[^>]*type="LINE"' \
+                     build/reports/jacoco/test/jacocoTestReport.xml)
 
-          # 3) parse missed & covered to compute %
-          COVERAGE=$(echo "$LINE_TAG" \
-            | awk -F'"' '{ missed=$4; covered=$6;
-                           total = missed + covered;
-                           if (total==0) printf "0.00";
-                           else printf "%.2f", covered*100/total }')
+          # ── extract the numbers, no matter which order the attributes appear
+          MISSED=$(echo "$LINE_TAG" | grep -oP 'missed="\K[0-9]+')
+          COVERED=$(echo "$LINE_TAG" | grep -oP 'covered="\K[0-9]+')
 
-          # 4) expose it and write to the check-run summary
-          echo "coverage=${COVERAGE}" >> "$GITHUB_OUTPUT"
-          echo "### Code coverage: ${COVERAGE}%" >> "$GITHUB_STEP_SUMMARY"
+          TOTAL=$((MISSED + COVERED))
+          if [ "$TOTAL" -eq 0 ]; then
+            PCT="0.00"
+          else
+            # portable floating-point math
+            PCT=$(printf "%.2f" "$(bc -l <<< "$COVERED*100/$TOTAL")")
+          fi
+
+          echo "coverage=$PCT" >> "$GITHUB_OUTPUT"
+          echo "### Code coverage: ${PCT}%" >> "$GITHUB_STEP_SUMMARY"
 
       # 8) Post that coverage as a PR comment
       - name: Post code-coverage to PR
-        uses: peter-evans/create-or-update-comment@v4
         if: success()
+        uses: peter-evans/create-or-update-comment@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          token:        ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
+          marker:       <!-- code-coverage-comment -->
           body: |
-            🧪 **Code Coverage**
+            <!-- code-coverage-comment -->
+            🧪 **Code Coverage**  
             Current code coverage is **${{ steps.coverage.outputs.coverage }}%**.
 
-      # 8) Finally, **fail the job** if Checkstyle produced any violations
+      # 9) Finally, **fail the job** if Checkstyle produced any violations
       - name: Fail if Checkstyle failed
         if: steps.checkstyle.outputs.checkstyle_exit != '0'
         run: |
