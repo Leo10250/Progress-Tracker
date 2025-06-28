@@ -8,6 +8,7 @@ class ProgressTrackerApplicationTests {
 
 	@Test
 	void contextLoads() {
+		ProgressTrackerApplication.main(new String[]{});
 	}
 
 }
