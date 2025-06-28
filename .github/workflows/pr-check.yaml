@@ -90,7 +90,7 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
-          marker: "<!-- code-coverage-comment -->"
+          edit-mode: replace 
           body: |
             <!-- code-coverage-comment -->
             🧪 **Code Coverage**  
