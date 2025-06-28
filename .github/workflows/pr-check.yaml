@@ -91,7 +91,7 @@ jobs:
       # 8) Post / update the PR comment
       - name: Post code-coverage to PR
         id: coverage_comment
-        if: always()
+        if: github.event_name == 'pull_request' && success()
         uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
