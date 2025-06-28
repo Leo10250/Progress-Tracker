@@ -42,7 +42,7 @@ public class ProgressServiceTest {
     }
 
     @Test
-    void getById_whenFound_returnsProgress() {
+    void getByIdWhenFoundReturnsProgress() {
         Progress p = Progress.builder()
                 .id(99L)
                 .userId(42L)
@@ -64,9 +64,9 @@ public class ProgressServiceTest {
         // —— 准备请求参数
         ProgressRequest request = new ProgressRequest();
         request.setUserID(42L);
-        Map<String,Integer> cats = new HashMap<>();
+        Map<String, Integer> cats = new HashMap<>();
         cats.put(Constants.STUDY_HOURS, 3);
-        cats.put(Constants.TV_HOURS,   1);
+        cats.put(Constants.TV_HOURS, 1);
         // WORK_HOURS 不传，默认 0；COOKING_HOURS 不传，默认 null
         request.setCategories(cats);
 

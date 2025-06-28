@@ -104,22 +104,28 @@ jobs:
           echo "pct=$pct" >> "$GITHUB_OUTPUT"
           echo "### Code coverage: ${pct}% " >> "$GITHUB_STEP_SUMMARY"
 
-      # post/update a PR comment (PRs only
-      - name: Comment coverage on PR
-        if: ${{ github.event_name == 'pull_request' }}
+      # find existing coverage comment
+      - name: Find existing coverage comment
+        id: find_cov
+        uses: peter-evans/find-comment@v3
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          comment-author: "github-actions[bot]"
+          body-includes: "<!-- code-coverage-comment -->"
+
+      - name: 💬 Create or update coverage comment
         uses: peter-evans/create-or-update-comment@v4
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
+          comment-id: ${{ steps.find_cov.outputs.comment-id }} # empty = create, non-empty = update
           issue-number: ${{ github.event.pull_request.number }}
           edit-mode: replace
-          search-string: "<!-- code-coverage-comment -->"
           body: |
             <!-- code-coverage-comment -->
             🧪 **Code Coverage**
 
             Current line coverage: **${{ steps.extract.outputs.pct }}%**
 
-            ${{ steps.extract.outputs.pct < '80.00' && '⚠️ Below required 80 %' || '✅ Meets required 80 %+' }}
+            ${{ fromJson(steps.extract.outputs.pct) < 80 && '⚠️ Below required 80 %' || '✅ Meets required 80 %+' }}
 
       # enforce the 80 % gate (only on main or PRs into main)
       - name: Enforce 80 % threshold
