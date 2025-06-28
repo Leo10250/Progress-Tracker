@@ -1,6 +1,8 @@
 # .github/workflows/pr-check.yml
 permissions:
-  issues: write
+  contents: read         # for checkout/build
+  issues: write          # to call the issues API
+  pull-requests: write   # to call the pull_requests API
 
 name: PR Check
 
