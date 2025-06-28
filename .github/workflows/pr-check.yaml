@@ -57,7 +57,7 @@ jobs:
             build/reports/checkstyle/*.html
             build/reports/checkstyle/*.xml
 
-      # 7) Generate coverage and capture it (Bash-only version)
+      # 7) Generate coverage and capture it
       - name: Generate coverage and capture it
         id: coverage
         shell: bash
@@ -83,18 +83,18 @@ jobs:
           echo "coverage=${PCT}" >> "$GITHUB_OUTPUT"
           echo "### Code coverage: ${PCT}%" >> "$GITHUB_STEP_SUMMARY"
 
-      # 8) Post that coverage as a PR comment
+      # 8) Post (or update) the code-coverage comment
       - name: Post code-coverage to PR
+        id: coverage_comment # ← add an id
         if: success()
         uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
-          edit-mode: replace
-          recreate: true
+          edit-mode: replace # overwrite the previous bot comment
           body: |
             <!-- code-coverage-comment -->
-            🧪 **Code Coverage**  
+            🧪 **Code Coverage**
             Current code coverage is **${{ steps.coverage.outputs.coverage }}%**.
 
       # 9) Finally, **fail the job** if Checkstyle produced any violations
