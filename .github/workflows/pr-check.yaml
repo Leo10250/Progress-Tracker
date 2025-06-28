@@ -1,45 +1,44 @@
 # .github/workflows/pr-check.yml
 permissions:
-  contents: read # for checkout/build
-  issues: write # to call the issues API
-  pull-requests: write # to call the pull_requests API
+  contents: read
+  issues: write
+  pull-requests: write
 
 name: PR Check
 
 on:
   pull_request:
-    branches: [main] # adapt if you use a different default branch
+    branches: [main]
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1) Fetch code ──────────────────────────────────────────────────────────
+      # 1) Checkout ------------------------------------------------------------
       - uses: actions/checkout@v4
 
-      # 2) JDK 21 + Gradle cache (Temurin) ─────────────────────────────────────
+      # 2) JDK & Gradle cache ---------------------------------------------------
       - uses: actions/setup-java@v4
         with:
           java-version: "21"
           distribution: "temurin"
-          cache: gradle # <-- re-uses ~/.gradle caches between runs
+          cache: gradle
 
-      # 3) Lint first – but *capture* the exit code so the job can still finish
+      # 3) Run Checkstyle -------------------------------------------------------
       - name: Run Checkstyle
-        id: checkstyle # we’ll look at this id later
+        id: checkstyle
         shell: bash
         run: |
-          set +e                       # (1) don’t abort the shell immediately
-          ./gradlew --no-daemon \
-              checkstyleMain checkstyleTest
+          set +e
+          ./gradlew --no-daemon checkstyleMain checkstyleTest
           echo "checkstyle_exit=$?" >> "$GITHUB_OUTPUT"
 
-      # 4) Build, unit-test, Jacoco  ───────────────────────────────────────────
+      # 4) Build, unit-test -----------------------------------------------------
       - name: Build & test
         run: ./gradlew clean build --no-daemon
 
-      # 5) Always upload unit-test xml/html ⇢ PR Artifacts
+      # 5-6) Upload reports -----------------------------------------------------
       - name: Upload unit-test reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -47,7 +46,6 @@ jobs:
           name: test-results
           path: build/reports/tests/
 
-      # 6) Always upload Checkstyle reports (html + xml)
       - name: Upload Checkstyle reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -57,18 +55,15 @@ jobs:
             build/reports/checkstyle/*.html
             build/reports/checkstyle/*.xml
 
-      # 7) Generate coverage and capture it
+      # 7) Generate & capture coverage -----------------------------------------
       - name: Generate coverage and capture it
         id: coverage
         shell: bash
         run: |
           ./gradlew jacocoTestReport --no-daemon
 
-          # ── grab the *report-level* LINE counter (overall project total) ──
           LINE_TAG=$(grep -oP '<counter[^>]*type="LINE"[^>]*/>' \
-                     build/reports/jacoco/test/jacocoTestReport.xml \
-                     | tail -1)
-
+                     build/reports/jacoco/test/jacocoTestReport.xml | tail -1)
           MISSED=$(grep -oP 'missed="\K[0-9]+'  <<< "$LINE_TAG")
           COVERED=$(grep -oP 'covered="\K[0-9]+' <<< "$LINE_TAG")
           TOTAL=$((MISSED + COVERED))
@@ -76,28 +71,39 @@ jobs:
           if [ "$TOTAL" -eq 0 ]; then
             PCT="0.00"
           else
-            # awk gives portable floating-point division
-            PCT=$(awk -v c="$COVERED" -v t="$TOTAL" 'BEGIN { printf "%.2f", c*100/t }')
+            PCT=$(awk -v c="$COVERED" -v t="$TOTAL" \
+                   'BEGIN { printf "%.2f", c*100/t }')
           fi
 
           echo "coverage=${PCT}" >> "$GITHUB_OUTPUT"
           echo "### Code coverage: ${PCT}%" >> "$GITHUB_STEP_SUMMARY"
 
-      # 8) Post (or update) the code-coverage comment
+      # 8) Update / create the PR comment --------------------------------------
       - name: Post code-coverage to PR
-        id: coverage_comment # ← add an id
-        if: success()
+        id: coverage_comment
+        if: always() # run even if next step fails
         uses: peter-evans/create-or-update-comment@v4
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
-          edit-mode: replace # overwrite the previous bot comment
+          edit-mode: replace
           body: |
             <!-- code-coverage-comment -->
             🧪 **Code Coverage**
             Current code coverage is **${{ steps.coverage.outputs.coverage }}%**.
 
-      # 9) Finally, **fail the job** if Checkstyle produced any violations
+      # 9) Fail the build if coverage < 80 % -----------------------------------
+      - name: Enforce 80 % coverage threshold
+        if: success() # proceed only if everything above succeeded
+        shell: bash
+        run: |
+          cov=${{ steps.coverage.outputs.coverage }}
+          if (( $(echo "$cov < 80" | bc -l) )); then
+            echo "Code coverage ${cov}% is below the required 80%." >&2
+            exit 1
+          fi
+
+      # 10) Fail if Checkstyle violations --------------------------------------
       - name: Fail if Checkstyle failed
         if: steps.checkstyle.outputs.checkstyle_exit != '0'
         run: |
