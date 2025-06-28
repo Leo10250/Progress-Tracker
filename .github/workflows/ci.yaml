@@ -105,6 +105,7 @@ jobs:
 
       # locate any existing bot coverage comment
       - name: Find existing coverage comment
+        if: ${{ github.event_name == 'pull_request' }}
         id: find_cov
         uses: peter-evans/find-comment@v3
         with:
@@ -114,7 +115,7 @@ jobs:
 
       # delete the old comment if it exists
       - name: Delete old coverage comment
-        if: steps.find_cov.outputs.comment-id != ''
+        if: ${{ github.event_name == 'pull_request' && steps.find_cov.outputs.comment-id != '' }}
         uses: actions/github-script@v7
         with:
           script: |
@@ -128,6 +129,7 @@ jobs:
 
       # post a fresh coverage comment
       - name: 💬 Post new coverage comment
+        if: ${{ github.event_name == 'pull_request' }}
         uses: peter-evans/create-or-update-comment@v4
         with:
           issue-number: ${{ github.event.pull_request.number }}
