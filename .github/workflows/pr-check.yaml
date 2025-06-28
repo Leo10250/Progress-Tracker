@@ -1,8 +1,8 @@
 # .github/workflows/pr-check.yml
 permissions:
-  contents: read         # for checkout/build
-  issues: write          # to call the issues API
-  pull-requests: write   # to call the pull_requests API
+  contents: read # for checkout/build
+  issues: write # to call the issues API
+  pull-requests: write # to call the pull_requests API
 
 name: PR Check
 
@@ -57,16 +57,25 @@ jobs:
             build/reports/checkstyle/*.html
             build/reports/checkstyle/*.xml
 
-      # 7) Generate coverage and capture it
-      - name: Generate and capture coverage %
+            # 7) Generate coverage and capture it
+      - name: Generate coverage and capture it
         id: coverage
         shell: bash
         run: |
+          # 1) produce the XML
           ./gradlew jacocoTestReport --no-daemon
-          COVERAGE=$(awk -F'"' 'NR==2 {
-            lines=$6+$8; covered=$6;
-            printf("%.2f", lines==0?0:covered*100/lines)
-          }' build/reports/jacoco/test/jacocoTestReport.xml)
+
+          # 2) grab just the <counter type="LINE" …/> line
+          LINE_TAG=$(grep 'counter.*type="LINE"' build/reports/jacoco/test/jacocoTestReport.xml)
+
+          # 3) parse missed & covered to compute %
+          COVERAGE=$(echo "$LINE_TAG" \
+            | awk -F'"' '{ missed=$4; covered=$6;
+                           total = missed + covered;
+                           if (total==0) printf "0.00";
+                           else printf "%.2f", covered*100/total }')
+
+          # 4) expose it and write to the check-run summary
           echo "coverage=${COVERAGE}" >> "$GITHUB_OUTPUT"
           echo "### Code coverage: ${COVERAGE}%" >> "$GITHUB_STEP_SUMMARY"
 
