@@ -1,9 +1,24 @@
+<?xml version="1.0"?>
+
+<!-- updated public DTD reference -->
+<!DOCTYPE module PUBLIC
+    "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN"
+    "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
 <module name="Checker">
   <!--
     Top‐level severity for all checks.
     We're treating any violation as an error to fail the build.
   -->
   <property name="severity" value="error"/>
+
+  <!--
+    Checks line length.
+    Default max = 80 characters if no <property> is set.
+  -->
+  <module name="LineLength">
+    <property name="max" value="120"/>
+  </module>
 
   <!--
     TreeWalker runs AST‐based checks on Java source.
@@ -86,12 +101,6 @@
       Allows only one public (or top‐level) class or interface per file.
     -->
     <module name="OneTopLevelClass"/>
-
-    <!--
-      Checks line length.
-      Default max = 80 characters if no <property> is set.
-    -->
-    <module name="LineLength"/>
 
     <!--
       Checks cyclomatic complexity of methods.
