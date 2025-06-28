@@ -104,7 +104,7 @@ jobs:
           echo "pct=$pct" >> "$GITHUB_OUTPUT"
           echo "### Code coverage: ${pct}% " >> "$GITHUB_STEP_SUMMARY"
 
-      # find existing coverage comment
+        # -------------- locate any old bot comment --------------
       - name: Find existing coverage comment
         id: find_cov
         uses: peter-evans/find-comment@v3
@@ -113,13 +113,25 @@ jobs:
           comment-author: "github-actions[bot]"
           body-includes: "<!-- code-coverage-comment -->"
 
-      # update or create coverage comment
-      - name: 💬 Create or update coverage comment
+      # -------------- delete it if present ----------------------
+      - name: Delete old coverage comment
+        if: steps.find_cov.outputs.comment-id != ''
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.deleteComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              comment_id: Number(process.env.COVERAGE_COMMENT_ID)
+            });
+          env:
+            COVERAGE_COMMENT_ID: ${{ steps.find_cov.outputs.comment-id }}
+
+      # -------------- add a fresh comment -----------------------
+      - name: 💬 Post new coverage comment
         uses: peter-evans/create-or-update-comment@v4
         with:
-          comment-id: ${{ steps.find_cov.outputs.comment-id }} # empty = create, non-empty = update
           issue-number: ${{ github.event.pull_request.number }}
-          edit-mode: replace
           body: |
             <!-- code-coverage-comment -->
             🧪 **Code Coverage**
