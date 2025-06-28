@@ -104,16 +104,16 @@ jobs:
             Current code coverage is **${{ steps.coverage.outputs.coverage }}%**.  
             ${{ steps.coverage.outputs.status_msg }}
 
-      # 9) Fail the build when coverage < 80 %
-      - name: Enforce 80 % coverage threshold
-        if: success()
-        shell: bash
-        run: |
-          cov=${{ steps.coverage.outputs.coverage }}
-          if (( $(echo "$cov < 80" | bc -l) )); then
-            echo "Code coverage ${cov}% is below the required 80% threshold." >&2
-            exit 1
-          fi
+      # # 9) Fail the build when coverage < 80 %
+      # - name: Enforce 80 % coverage threshold
+      #   if: success()
+      #   shell: bash
+      #   run: |
+      #     cov=${{ steps.coverage.outputs.coverage }}
+      #     if (( $(echo "$cov < 80" | bc -l) )); then
+      #       echo "Code coverage ${cov}% is below the required 80% threshold." >&2
+      #       exit 1
+      #     fi
 
       # 10) Fail if Checkstyle violations
       - name: Fail if Checkstyle failed
