@@ -57,31 +57,26 @@ jobs:
             build/reports/checkstyle/*.html
             build/reports/checkstyle/*.xml
 
-      # 7) Generate coverage and capture it
       - name: Generate coverage and capture it
         id: coverage
         shell: bash
         run: |
           ./gradlew jacocoTestReport --no-daemon
 
-          # ── pull the first  <counter type="LINE" …/>  element
-          LINE_TAG=$(grep -m1 '<counter[^>]*type="LINE"' \
-                     build/reports/jacoco/test/jacocoTestReport.xml)
+          # --- parse JaCoCo XML with tiny Python ---
+          COVERAGE=$(python - <<'PY'
+import xml.etree.ElementTree as ET
+root = ET.parse('build/reports/jacoco/test/jacocoTestReport.xml').getroot()
+counter = next(c for c in root.iter('counter') if c.get('type') == 'LINE')
+missed, covered = int(counter['missed']), int(counter['covered'])
+total = missed + covered
+print(f'{0.0 if total == 0 else covered * 100 / total:.2f}')
+PY
+          )
 
-          # ── extract the numbers, no matter which order the attributes appear
-          MISSED=$(echo "$LINE_TAG" | grep -oP 'missed="\K[0-9]+')
-          COVERED=$(echo "$LINE_TAG" | grep -oP 'covered="\K[0-9]+')
+          echo "coverage=${COVERAGE}" >> "$GITHUB_OUTPUT"
+          echo "### Code coverage: ${COVERAGE}%" >> "$GITHUB_STEP_SUMMARY"
 
-          TOTAL=$((MISSED + COVERED))
-          if [ "$TOTAL" -eq 0 ]; then
-            PCT="0.00"
-          else
-            # portable floating-point math
-            PCT=$(printf "%.2f" "$(bc -l <<< "$COVERED*100/$TOTAL")")
-          fi
-
-          echo "coverage=$PCT" >> "$GITHUB_OUTPUT"
-          echo "### Code coverage: ${PCT}%" >> "$GITHUB_STEP_SUMMARY"
 
       # 8) Post that coverage as a PR comment
       - name: Post code-coverage to PR
