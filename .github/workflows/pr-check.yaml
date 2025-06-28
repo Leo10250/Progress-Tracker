@@ -6,7 +6,7 @@ name: PR Check
 
 on:
   pull_request:
-    branches: [ main ]     # adapt if you use a different default branch
+    branches: [main] # adapt if you use a different default branch
 
 jobs:
   build:
@@ -21,11 +21,11 @@ jobs:
         with:
           java-version: "21"
           distribution: "temurin"
-          cache: gradle              # <-- re-uses ~/.gradle caches between runs
+          cache: gradle # <-- re-uses ~/.gradle caches between runs
 
       # 3) Lint first – but *capture* the exit code so the job can still finish
       - name: Run Checkstyle
-        id: checkstyle                  # we’ll look at this id later
+        id: checkstyle # we’ll look at this id later
         shell: bash
         run: |
           set +e                       # (1) don’t abort the shell immediately
@@ -70,14 +70,14 @@ jobs:
 
       # 8) Post that coverage as a PR comment
       - name: Post code-coverage to PR
-        if: success()
         uses: peter-evans/create-or-update-comment@v4
+        if: success()
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          header: "🧪 Code Coverage"
+          issue-number: ${{ github.event.pull_request.number }}
           body: |
+            🧪 **Code Coverage**
             Current code coverage is **${{ steps.coverage.outputs.coverage }}%**.
-
 
       # 8) Finally, **fail the job** if Checkstyle produced any violations
       - name: Fail if Checkstyle failed
