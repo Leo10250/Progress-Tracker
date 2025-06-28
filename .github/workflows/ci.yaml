@@ -8,12 +8,12 @@ permissions:
 
 on:
   push:
-    branches: [main] # run after every merge to main
+    branches: [main]          # run after every merge to main
   pull_request:
-    branches: [main] # run for every PR targeting main
+    branches: [main]          # run for every PR targeting main
 
 jobs:
-  # 1) LINT
+  # 1) LINT -------------------------------------------------------------------
   lint:
     name: 📝 Checkstyle
     runs-on: ubuntu-latest
@@ -31,14 +31,13 @@ jobs:
         id: run-checkstyle
         shell: bash
         run: |
-          set +e                              # keep going to upload report
+          set +e                               # keep going to upload report
           ./gradlew --no-daemon \
-              checkstyleMain checkstyleTest
+            checkstyleMain checkstyleTest
           ec=$?
           echo "exit_code=${ec}" >> "$GITHUB_OUTPUT"
-          exit $ec                            # fail the job if violations found
+          exit $ec                             # fail job if violations found
 
-      # always upload the HTML/XML reports so you can inspect them
       - name: Upload Checkstyle reports
         if: always()
         uses: actions/upload-artifact@v4
@@ -46,11 +45,11 @@ jobs:
           name: checkstyle-reports
           path: build/reports/checkstyle/*
 
-  # 2) BUILD & UNIT TESTS
+  # 2) BUILD & UNIT TESTS ------------------------------------------------------
   build-test:
     name: 🛠️ Build & Unit Tests
     runs-on: ubuntu-latest
-    needs: lint # wait until lint job finishes (pass or fail)
+    needs: lint                                 # wait until lint job finishes
 
     steps:
       - uses: actions/checkout@v4
@@ -71,11 +70,11 @@ jobs:
           name: test-results
           path: build/reports/tests/
 
-  # 3) COVERAGE & GATE
+  # 3) COVERAGE & GATE ---------------------------------------------------------
   coverage:
     name: 📊 Code Coverage
     runs-on: ubuntu-latest
-    needs: build-test # must compile & test first
+    needs: build-test                           # compile & test first
 
     steps:
       - uses: actions/checkout@v4
@@ -86,11 +85,11 @@ jobs:
           distribution: temurin
           cache: gradle
 
-      # generate Jacoco report
+      # ----- generate Jacoco report ------------------------------------------
       - name: Generate coverage report
         run: ./gradlew jacocoTestReport --no-daemon
 
-      # extract overall LINE coverage percentage
+      # ----- extract overall LINE coverage % ---------------------------------
       - name: Extract coverage %
         id: extract
         shell: bash
@@ -104,16 +103,16 @@ jobs:
           echo "pct=$pct" >> "$GITHUB_OUTPUT"
           echo "### Code coverage: ${pct}% " >> "$GITHUB_STEP_SUMMARY"
 
-        # -------------- locate any old bot comment --------------
+      # ----- locate any existing bot coverage comment -------------------------
       - name: Find existing coverage comment
         id: find_cov
         uses: peter-evans/find-comment@v3
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          comment-author: "github-actions[bot]"
-          body-includes: "<!-- code-coverage-comment -->"
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- code-coverage-comment -->'
 
-      # -------------- delete it if present ----------------------
+      # ----- delete the old comment if it exists ------------------------------
       - name: Delete old coverage comment
         if: steps.find_cov.outputs.comment-id != ''
         uses: actions/github-script@v7
@@ -121,13 +120,13 @@ jobs:
           script: |
             await github.rest.issues.deleteComment({
               owner: context.repo.owner,
-              repo: context.repo.repo,
+              repo:  context.repo.repo,
               comment_id: Number(process.env.COVERAGE_COMMENT_ID)
             });
-          env:
-            COVERAGE_COMMENT_ID: ${{ steps.find_cov.outputs.comment-id }}
+        env:
+          COVERAGE_COMMENT_ID: ${{ steps.find_cov.outputs.comment-id }}
 
-      # -------------- add a fresh comment -----------------------
+      # ----- post a fresh coverage comment ------------------------------------
       - name: 💬 Post new coverage comment
         uses: peter-evans/create-or-update-comment@v4
         with:
@@ -140,14 +139,13 @@ jobs:
 
             ${{ fromJson(steps.extract.outputs.pct) < 80 && '⚠️ Below required 80 %' || '✅ Meets required 80 %+' }}
 
-      # enforce the 80 % gate (only on main or PRs into main)
+      # ----- enforce the 80 % gate (main & PRs into main) ----------------------
       - name: Enforce 80 % threshold
         shell: bash
         run: |
           pct=${{ steps.extract.outputs.pct }}
-          # we only gate pushes to main or PRs targeting main
           if [[ ("${{ github.event_name }}" == "push" && "${{ github.ref }}" == "refs/heads/main") \
-              || ("${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.base.ref }}" == "main") ]]; then
+             || ("${{ github.event_name }}" == "pull_request" && "${{ github.event.pull_request.base.ref }}" == "main") ]]; then
             if (( $(echo "$pct < 80" | bc -l) )); then
               echo "Coverage $pct % is below the required 80 %." >&2
               exit 1
