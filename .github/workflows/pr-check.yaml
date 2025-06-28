@@ -57,37 +57,40 @@ jobs:
             build/reports/checkstyle/*.html
             build/reports/checkstyle/*.xml
 
-      # 7) Generate coverage and capture it
+      # 7) Generate coverage and capture it (Bash-only version)
       - name: Generate coverage and capture it
         id: coverage
         shell: bash
         run: |
           ./gradlew jacocoTestReport --no-daemon
 
-          # --- parse JaCoCo XML with tiny Python ---
-          COVERAGE=$(python - <<'PY'
-          import xml.etree.ElementTree as ET
-          root = ET.parse('build/reports/jacoco/test/jacocoTestReport.xml').getroot()
-          counter = next(c for c in root.iter('counter') if c.get('type') == 'LINE')
-          missed, covered = int(counter['missed']), int(counter['covered'])
-          total = missed + covered
-          print(f'{0.0 if total == 0 else covered * 100 / total:.2f}')
-          PY
-                    )
+          # ── grab the *report-level* LINE counter (overall project total) ──
+          LINE_TAG=$(grep -oP '<counter[^>]*type="LINE"[^>]*/>' \
+                     build/reports/jacoco/test/jacocoTestReport.xml \
+                     | tail -1)
 
-          echo "coverage=${COVERAGE}" >> "$GITHUB_OUTPUT"
-          echo "### Code coverage: ${COVERAGE}%" >> "$GITHUB_STEP_SUMMARY"
+          MISSED=$(grep -oP 'missed="\K[0-9]+'  <<< "$LINE_TAG")
+          COVERED=$(grep -oP 'covered="\K[0-9]+' <<< "$LINE_TAG")
+          TOTAL=$((MISSED + COVERED))
 
+          if [ "$TOTAL" -eq 0 ]; then
+            PCT="0.00"
+          else
+            # awk gives portable floating-point division
+            PCT=$(awk -v c="$COVERED" -v t="$TOTAL" 'BEGIN { printf "%.2f", c*100/t }')
+          fi
 
+          echo "coverage=${PCT}" >> "$GITHUB_OUTPUT"
+          echo "### Code coverage: ${PCT}%" >> "$GITHUB_STEP_SUMMARY"
 
       # 8) Post that coverage as a PR comment
       - name: Post code-coverage to PR
         if: success()
         uses: peter-evans/create-or-update-comment@v4
         with:
-          token:        ${{ secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           issue-number: ${{ github.event.pull_request.number }}
-          marker:       <!-- code-coverage-comment -->
+          marker: "<!-- code-coverage-comment -->"
           body: |
             <!-- code-coverage-comment -->
             🧪 **Code Coverage**  
