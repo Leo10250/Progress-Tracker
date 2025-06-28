@@ -113,6 +113,7 @@ jobs:
           comment-author: "github-actions[bot]"
           body-includes: "<!-- code-coverage-comment -->"
 
+      # update or create coverage comment
       - name: 💬 Create or update coverage comment
         uses: peter-evans/create-or-update-comment@v4
         with:
