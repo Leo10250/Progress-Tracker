@@ -57,6 +57,7 @@ jobs:
             build/reports/checkstyle/*.html
             build/reports/checkstyle/*.xml
 
+      # 7) Generate coverage and capture it
       - name: Generate coverage and capture it
         id: coverage
         shell: bash
@@ -65,17 +66,18 @@ jobs:
 
           # --- parse JaCoCo XML with tiny Python ---
           COVERAGE=$(python - <<'PY'
-import xml.etree.ElementTree as ET
-root = ET.parse('build/reports/jacoco/test/jacocoTestReport.xml').getroot()
-counter = next(c for c in root.iter('counter') if c.get('type') == 'LINE')
-missed, covered = int(counter['missed']), int(counter['covered'])
-total = missed + covered
-print(f'{0.0 if total == 0 else covered * 100 / total:.2f}')
-PY
-          )
+          import xml.etree.ElementTree as ET
+          root = ET.parse('build/reports/jacoco/test/jacocoTestReport.xml').getroot()
+          counter = next(c for c in root.iter('counter') if c.get('type') == 'LINE')
+          missed, covered = int(counter['missed']), int(counter['covered'])
+          total = missed + covered
+          print(f'{0.0 if total == 0 else covered * 100 / total:.2f}')
+          PY
+                    )
 
           echo "coverage=${COVERAGE}" >> "$GITHUB_OUTPUT"
           echo "### Code coverage: ${COVERAGE}%" >> "$GITHUB_STEP_SUMMARY"
+
 
 
       # 8) Post that coverage as a PR comment
