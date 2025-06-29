@@ -10,4 +10,8 @@ class ProgressTrackerApplicationTests {
 	void contextLoads() {
 	}
 
+	@Test
+	void mainMethodRunsWithoutException() {
+		ProgressTrackerApplication.main(new String[]{});
+	}
 }
