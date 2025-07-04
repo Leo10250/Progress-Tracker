@@ -32,16 +32,16 @@ public class ProgressServiceTest {
     @InjectMocks
     private ProgressService service;
 
-    private Map<String, Integer> categories;
+    private Map<Category, Integer> categories;
 
     @BeforeEach
     void setUp() {
 
         // default categories map for tests
         categories = new HashMap<>();
-        categories.put(Constants.STUDY_HOURS, 5);
-        categories.put(Constants.TV_HOURS, 2);
-        categories.put(Constants.WORK_HOURS, 3);
+        categories.put(Category.STUDY_HOURS, 5);
+        categories.put(Category.TV_HOURS, 2);
+        categories.put(Category.WORK_HOURS, 3);
     }
 
     @Test

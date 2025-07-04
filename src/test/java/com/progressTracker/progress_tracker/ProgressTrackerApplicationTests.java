@@ -6,12 +6,12 @@ import org.springframework.boot.test.context.SpringBootTest;
 @SpringBootTest
 class ProgressTrackerApplicationTests {
 
-	@Test
-	void contextLoads() {
-	}
+    @Test
+    void contextLoads() {
+    }
 
-	@Test
-	void mainMethodRunsWithoutException() {
-		ProgressTrackerApplication.main(new String[]{});
-	}
+    @Test
+    void mainMethodRunsWithoutException() {
+        ProgressTrackerApplication.main(new String[]{});
+    }
 }

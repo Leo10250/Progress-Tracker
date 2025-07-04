@@ -75,17 +75,17 @@ public class ProgressController {
 
         log.info("[getProgress] [id={}] [category={}] Retrieving individual category", userId, category);
         Integer hours;
-        switch (category.toString()) {
-            case Constants.STUDY_HOURS:
+        switch (category) {
+            case Category.STUDY_HOURS:
                 hours = p.getStudyHours();
                 break;
-            case Constants.WORK_HOURS:
+            case Category.WORK_HOURS:
                 hours = p.getWorkHours();
                 break;
-            case Constants.TV_HOURS:
+            case Category.TV_HOURS:
                 hours = p.getTvHours();
                 break;
-            case Constants.COOKING_HOURS:
+            case Category.COOKING_HOURS:
                 hours = p.getCookingHours();
                 break;
             default:
