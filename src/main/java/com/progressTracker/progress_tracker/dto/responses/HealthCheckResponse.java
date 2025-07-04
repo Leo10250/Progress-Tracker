@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class HealthCheckResponse {
-    private String status;
-    private String statusCode;
-    private String statusMessage;
+    private final String status;
+    private final String statusCode;
+    private final String statusMessage;
 }

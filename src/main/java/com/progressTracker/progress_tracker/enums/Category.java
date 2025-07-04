@@ -2,30 +2,29 @@ package com.progressTracker.progress_tracker.enums;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.progressTracker.progress_tracker.constants.Constants;
 import com.progressTracker.progress_tracker.exception.UnknownCategoryException;
 
 public enum Category {
-    STUDY_HOURS(Constants.STUDY_HOURS),
-    WORK_HOURS(Constants.WORK_HOURS),
-    TV_HOURS(Constants.TV_HOURS),
-    COOKING_HOURS(Constants.COOKING_HOURS);
+    STUDY_HOURS("studyHours"),
+    WORK_HOURS("tvHours"),
+    TV_HOURS("workHours"),
+    COOKING_HOURS("cookingHours");
 
-    private final String key;
+    private final String value;
 
-    Category(String key) {
-        this.key = key;
+    Category(String value) {
+        this.value = value;
     }
 
     @JsonValue
-    public String getKey() {
-        return key;
+    public String value() {
+        return value;
     }
 
     @JsonCreator
     public static Category fromJson(String key) {
         for (Category c : values()) {
-            if (c.key.equalsIgnoreCase(key)) {
+            if (c.value.equalsIgnoreCase(key)) {
                 return c;
             }
         }

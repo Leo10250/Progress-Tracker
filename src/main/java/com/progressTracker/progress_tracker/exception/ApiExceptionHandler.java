@@ -18,7 +18,7 @@ public class ApiExceptionHandler {
 
         Map<String, Object> responseBody = Map.of(
                 "status", 404,
-                "error",  "Not Found",
+                "error", "Not Found",
                 "message", ex.getMessage()
         );
         return ResponseEntity.status(404).body(responseBody);   // HTTP 404
@@ -28,7 +28,7 @@ public class ApiExceptionHandler {
     public ResponseEntity<Map<String, Object>> handleBadJson(HttpMessageNotReadableException ex) {
         Map<String, Object> body = Map.of(
                 "status", 400,
-                "error",  "Bad Request",
+                "error", "Bad Request",
                 "message", "Malformed JSON request"
         );
         return ResponseEntity.status(400).body(body);
