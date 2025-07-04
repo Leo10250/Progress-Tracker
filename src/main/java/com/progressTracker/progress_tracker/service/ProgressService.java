@@ -3,6 +3,8 @@ package com.progressTracker.progress_tracker.service;
 import java.util.List;
 import java.util.Map;
 
+import com.progressTracker.progress_tracker.enums.Category;
+import com.progressTracker.progress_tracker.exception.NoProgressException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +29,7 @@ public class ProgressService {
 
     @Transactional
     public Progress saveProgress(ProgressRequest request) {
-        Map<String, Integer> categories = request.getCategories();
+        Map<Category, Integer> categories = request.getCategories();
         Progress progress = Progress.builder()
                 .userId(request.getUserID())
                 .studyHours(categories.getOrDefault(Constants.STUDY_HOURS, 0))
@@ -44,6 +46,6 @@ public class ProgressService {
     @Transactional(readOnly = true)
     public Progress getProgressByUserId(Long userId) {
         return repository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("No progress found for userId: " + userId));
+                .orElseThrow(() -> new NoProgressException(userId));
     }
 }
