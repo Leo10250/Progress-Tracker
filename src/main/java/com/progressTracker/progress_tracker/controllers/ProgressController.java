@@ -35,7 +35,9 @@ public class ProgressController {
     public ResponseEntity<ProgressResponse> setProgress(@RequestBody ProgressRequest progressRequest) {
         log.info("[setProgress] request {}", progressRequest.toString());
 
-        progressService.saveProgress(progressRequest);
+        Progress progress = progressService.saveProgress(progressRequest);
+
+        log.info("[setProgress] Progress saved successfully with ID: {}", progress.getId());
 
         ProgressResponse response = new ProgressResponse(
                 "Success",
@@ -49,10 +51,11 @@ public class ProgressController {
             @RequestParam(Constants.USER_ID) Long userId,
             @RequestParam(value = Constants.CATEGORIES, required = false) Category category
     ) {
-        log.info("[getProgress] id={}, category={}", userId, category == null ? "All categories" : category.toString());
+        log.info("[getProgress] [id={}] [category={}]", userId, category == null ? "All categories" : category.toString());
 
         Progress p = progressService.getProgressByUserId(userId);
         if (p == null) {
+            log.warn("[getProgress] [id={}] User not found", userId);
             return ResponseEntity.status(404)
                     .body(Collections.singletonMap("error", "User not found"));
         }
@@ -65,10 +68,11 @@ public class ProgressController {
                     Category.TV_HOURS, p.getTvHours(),
                     Category.COOKING_HOURS, p.getCookingHours()
             );
-            log.info("[getProgress] All categories retrieved successfully");
+            log.info("[getProgress] [id={}] All categories retrieved successfully", userId);
             return ResponseEntity.ok(all);
         }
 
+        log.info("[getProgress] [id={}] [category={}] Retrieving individual category", userId, category);
         Integer hours;
         switch (category.toString()) {
             case Constants.STUDY_HOURS:

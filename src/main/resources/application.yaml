@@ -22,3 +22,8 @@ logging:
             progressTracker: DEBUG
     pattern:
         console: "%-5level - %replace(%msg){'[\\r\\n]', ''}%n"
+
+server:
+    error:
+        include-stacktrace: never
+        include-message: always
