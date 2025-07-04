@@ -1,3 +1,5 @@
+import com.github.spotbugs.snom.SpotBugsTask
+
 plugins {
 	id 'java'
     id 'jacoco'
@@ -6,6 +8,7 @@ plugins {
 	id 'io.spring.dependency-management' version '1.1.7'
 	id 'org.hibernate.orm' version '6.6.15.Final'
 	id 'org.graalvm.buildtools.native' version '0.10.6'
+	id 'com.github.spotbugs' version '6.0.14'
 }
 
 group = 'com.progressTracker'
@@ -26,6 +29,17 @@ checkstyle {
     configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
     sourceSets = [ sourceSets.main, sourceSets.test ]
 }
+
+spotbugs {
+	toolVersion = '4.8.5'   // SpotBugs engine version
+	effort      = 'max'     // min | default | max   → max = slowest, most rules
+	reportLevel = 'medium'     // high | medium | low   → fail threshold
+
+	// Example: turn off a specific detector everywhere
+	omitVisitors = ['FindReturnRef']
+}
+
+
 
 configurations {
 	compileOnly {
@@ -51,6 +65,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-webflux'
 	implementation 'org.flywaydb:flyway-core'
 	implementation 'org.flywaydb:flyway-database-postgresql'
+	implementation 'org.apache.commons:commons-lang3'
+	compileOnly 'com.github.spotbugs:spotbugs-annotations:4.8.5'
+	spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.12.0'
 	compileOnly 'org.projectlombok:lombok'
 	developmentOnly 'org.springframework.boot:spring-boot-devtools'
 	runtimeOnly 'com.h2database:h2'
@@ -94,3 +111,13 @@ tasks.withType(Checkstyle).configureEach {
         html.required.set(true)
     }
 }
+
+tasks.withType(SpotBugsTask).configureEach {
+	reports {
+		html.required.set(true)
+		xml.required.set(false)
+	}
+	excludeFilter = file("$rootDir/config/spotbugs/exclude.xml")
+}
+
+tasks.named('spotbugsAot') { enabled = false }

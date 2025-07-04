@@ -1,10 +1,11 @@
 package com.progressTracker.progress_tracker.controllers;
 
+import com.progressTracker.progress_tracker.enums.Category;
 import org.springframework.web.bind.annotation.RestController;
 
-import org.springframework.http.ResponseEntity;               
-import org.springframework.web.bind.annotation.GetMapping;    
-import org.springframework.web.bind.annotation.RequestParam; 
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import com.progressTracker.progress_tracker.dto.requests.ProgressRequest;
 import com.progressTracker.progress_tracker.dto.responses.ProgressResponse;
 
@@ -18,9 +19,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
-import java.util.Collections; 
-import java.util.HashMap;     
-import java.util.Map;     
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -30,11 +31,13 @@ public class ProgressController {
 
     private final ProgressService progressService;
 
-    @PostMapping(value = "/set", consumes = { "application/json" }, produces = { "application/json" })
+    @PostMapping(value = "/set", consumes = {"application/json"}, produces = {"application/json"})
     public ResponseEntity<ProgressResponse> setProgress(@RequestBody ProgressRequest progressRequest) {
         log.info("[setProgress] request {}", progressRequest.toString());
 
-        progressService.saveProgress(progressRequest);
+        Progress progress = progressService.saveProgress(progressRequest);
+
+        log.info("[setProgress] Progress saved successfully with ID: {}", progress.getId());
 
         ProgressResponse response = new ProgressResponse(
                 "Success",
@@ -46,42 +49,51 @@ public class ProgressController {
     @GetMapping(value = "/get", produces = "application/json")
     public ResponseEntity<?> getProgress(
             @RequestParam(Constants.USER_ID) Long userId,
-            @RequestParam(value = Constants.CATEGORIES, required = false) String category            
+            @RequestParam(value = Constants.CATEGORIES, required = false) Category category
     ) {
-        log.info("[getProgress] id={}, category={}", userId, category);
+        log.info("[getProgress] [id={}] [category={}]", userId,
+                category == null ? "All categories" : category.toString());
 
         Progress p = progressService.getProgressByUserId(userId);
         if (p == null) {
-            return ResponseEntity
-                    .status(404)
+            log.warn("[getProgress] [id={}] User not found", userId);
+            return ResponseEntity.status(404)
                     .body(Collections.singletonMap("error", "User not found"));
         }
 
-        if (category == null) {
-            Map<String, Integer> all = new HashMap<>();
-            all.put(Constants.STUDY_HOURS, p.getStudyHours());
-            all.put(Constants.WORK_HOURS,  p.getWorkHours());
-            all.put(Constants.TV_HOURS,    p.getTvHours());
-            all.put(Constants.COOKING_HOURS,    p.getTvHours());
-
-            Map<String, Object> body = new HashMap<>();
-            body.put(Constants.CATEGORIES, all);
-            return ResponseEntity.ok(body);
+        boolean allCategoriesRequested = category == null;
+        if (allCategoriesRequested) {
+            Map<Category, Integer> all = Map.of(
+                    Category.STUDY_HOURS, p.getStudyHours(),
+                    Category.WORK_HOURS, p.getWorkHours(),
+                    Category.TV_HOURS, p.getTvHours(),
+                    Category.COOKING_HOURS, p.getCookingHours()
+            );
+            log.info("[getProgress] [id={}] All categories retrieved successfully", userId);
+            return ResponseEntity.ok(all);
         }
 
-        Integer val;
-        switch (category) {
-            case Constants.STUDY_HOURS: val = p.getStudyHours(); break;
-            case Constants.WORK_HOURS:  val = p.getWorkHours();  break;
-            case Constants.TV_HOURS:    val = p.getTvHours();    break;
-            case Constants.COOKING_HOURS:    val = p.getTvHours();    break;
+        log.info("[getProgress] [id={}] [category={}] Retrieving individual category", userId, category);
+        Integer hours;
+        switch (category.toString()) {
+            case Constants.STUDY_HOURS:
+                hours = p.getStudyHours();
+                break;
+            case Constants.WORK_HOURS:
+                hours = p.getWorkHours();
+                break;
+            case Constants.TV_HOURS:
+                hours = p.getTvHours();
+                break;
+            case Constants.COOKING_HOURS:
+                hours = p.getCookingHours();
+                break;
             default:
                 return ResponseEntity
                         .badRequest()
                         .body(Collections.singletonMap(
-                            "error", "Unknown category: " + category));
+                                "error", "Unknown category: " + category));
         }
-
-        return ResponseEntity.ok(Collections.singletonMap(category, val));
+        return ResponseEntity.ok(Collections.singletonMap(category, hours));
     }
 }
