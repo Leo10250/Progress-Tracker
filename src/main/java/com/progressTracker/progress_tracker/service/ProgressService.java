@@ -2,10 +2,11 @@ package com.progressTracker.progress_tracker.service;
 
 import java.util.Map;
 
+import com.progressTracker.progress_tracker.enums.Category;
+import com.progressTracker.progress_tracker.exception.NoProgressException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.progressTracker.progress_tracker.constants.Constants;
 import com.progressTracker.progress_tracker.dto.requests.ProgressRequest;
 import com.progressTracker.progress_tracker.model.Progress;
 import com.progressTracker.progress_tracker.repository.ProgressRepository;
@@ -26,13 +27,13 @@ public class ProgressService {
 
     @Transactional
     public Progress saveProgress(ProgressRequest request) {
-        Map<String, Integer> categories = request.getCategories();
+        Map<Category, Integer> categories = request.getCategories();
         Progress progress = Progress.builder()
-                .userId(request.getUserID())
-                .studyHours(categories.getOrDefault(Constants.STUDY_HOURS, 0))
-                .tvHours(categories.getOrDefault(Constants.TV_HOURS, 0))
-                .workHours(categories.getOrDefault(Constants.WORK_HOURS, 0))
-                .cookingHours(categories.getOrDefault(Constants.COOKING_HOURS, 0))
+                .userId(request.getUserId())
+                .studyHours(categories.getOrDefault(Category.STUDY_HOURS, 0))
+                .tvHours(categories.getOrDefault(Category.TV_HOURS, 0))
+                .workHours(categories.getOrDefault(Category.WORK_HOURS, 0))
+                .cookingHours(categories.getOrDefault(Category.COOKING_HOURS, 0))
                 .build();
 
         repository.save(progress);
@@ -43,6 +44,6 @@ public class ProgressService {
     @Transactional(readOnly = true)
     public Progress getProgressByUserId(Long userId) {
         return repository.findByUserId(userId)
-                .orElseThrow(() -> new IllegalArgumentException("No progress found for userId: " + userId));
+                .orElseThrow(() -> new NoProgressException(userId));
     }
 }

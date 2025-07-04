@@ -41,7 +41,7 @@ public class ProgressServiceTest {
     }
 
     @Test
-    void getById_whenFound_returnsProgress() {
+    void getByIdWhenFoundReturnsProgress() {
         Progress p = Progress.builder()
                 .id(99L)
                 .userId(42L)
