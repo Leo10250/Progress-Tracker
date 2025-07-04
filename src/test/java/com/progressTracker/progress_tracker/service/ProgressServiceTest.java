@@ -31,8 +31,8 @@ public class ProgressServiceTest {
 
     @Mock
     private ProgressRequest request;
-    
-    private Map<String,Integer> categories;
+
+    private Map<String, Integer> categories;
 
     @BeforeEach
     void setUp() {
@@ -44,8 +44,8 @@ public class ProgressServiceTest {
         categories.put(Constants.WORK_HOURS, 3);
     }
 
-     @Test
-    void getById_whenFound_returnsProgress() {
+    @Test
+    void getByIdWhenFoundReturnsProgress() {
         Progress p = Progress.builder()
                 .id(99L)
                 .userId(42L)

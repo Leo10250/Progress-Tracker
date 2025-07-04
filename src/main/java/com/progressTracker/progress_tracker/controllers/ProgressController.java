@@ -51,7 +51,8 @@ public class ProgressController {
             @RequestParam(Constants.USER_ID) Long userId,
             @RequestParam(value = Constants.CATEGORIES, required = false) Category category
     ) {
-        log.info("[getProgress] [id={}] [category={}]", userId, category == null ? "All categories" : category.toString());
+        log.info("[getProgress] [id={}] [category={}]", userId,
+                category == null ? "All categories" : category.toString());
 
         Progress p = progressService.getProgressByUserId(userId);
         if (p == null) {
