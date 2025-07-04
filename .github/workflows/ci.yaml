@@ -65,11 +65,11 @@ jobs:
         id: run-spotbugs
         shell: bash
         run: |
-          set +e                              # capture exit but continue to upload report
-          ./gradlew --no-daemon spotbugsAll   # or spotbugsMain spotbugsTest
+          set +e                                            # capture exit but continue to upload report
+          ./gradlew --no-daemon spotbugsMain spotbugsTest
           ec=$?
           echo "exit_code=${ec}" >> "$GITHUB_OUTPUT"
-          exit $ec                            # fail the job if violations found
+          exit $ec                                          # fail the job if violations found
 
       # upload the HTML reports so reviewers can open them
       - name: Upload SpotBugs reports
