@@ -6,13 +6,17 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
+
+import com.progressTracker.progress_tracker.enums.Category;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import com.progressTracker.progress_tracker.constants.Constants;
@@ -62,11 +66,11 @@ public class ProgressServiceTest {
     public void saveProgressTest() {
         // —— 准备请求参数
         ProgressRequest request = new ProgressRequest();
-        request.setUserID(42L);
-        Map<String,Integer> cats = new HashMap<>();
-        cats.put(Constants.STUDY_HOURS, 3);
-        cats.put(Constants.TV_HOURS,   1);
-        // WORK_HOURS 不传，默认 0；COOKING_HOURS 不传，默认 null
+        request.setUserId(42L);
+        Map<Category, Integer> cats = new HashMap<>();
+        cats.put(Category.STUDY_HOURS, 3);
+        cats.put(Category.TV_HOURS, 1);
+        // WORK_HOURS 不传，默认 0；COOKING_HOURS 不传，默认 0
         request.setCategories(cats);
 
         Progress progress = service.saveProgress(request);
